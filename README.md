@@ -1,0 +1,10 @@
+# breakout-phaserio
+A Breakout game using Phaser, the javscript based game library
+
+* Clone the content somewhere 
+* User a server preferably pythons SimpleServer. To do that follow these steps:
+  - Install python on your machine
+  - In same folder as index.html run in terminal
+      python -m SimpleHTTPServer 8000
+  - Now go to localhost:8000 in any browser and play the game :)
+      
