@@ -8,3 +8,8 @@ A Breakout game using Phaser, the javscript based game library
       python -m SimpleHTTPServer 8000
   - Now go to localhost:8000 in any browser and play the game :)
       
+TODOS
+* Add power ups
+* Make ball take a different direction based on where it hits the paddle
+* Extra lives
+* Levels
