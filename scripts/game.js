@@ -37,7 +37,6 @@ window.onload = function() {
        }
     
     function createGems(){
-        console.log(gems.length);
         
         gems.removeAll(true);
         
@@ -57,7 +56,7 @@ window.onload = function() {
     function startGame() {
         ball.body.x = 400;
         ball.body.y = 200;
-        ball.body.velocity.setTo(250, -250);
+        ball.body.velocity.setTo(150, -300);
         startInfoText.visible = false;
     }
 
@@ -93,7 +92,8 @@ window.onload = function() {
     
     function update() {
         
-        game.physics.arcade.collide(player, ball);
+        
+        game.physics.arcade.collide(player, ball, playerBallCollitionHandler);
         game.physics.arcade.collide(ball, gems, collisionHandler);
 
         if (cursors.left.isDown)
@@ -124,5 +124,35 @@ window.onload = function() {
         score += 1;
         scoreText.text = "Score:" + score;
         fx.play();
+    }
+    
+    function playerBallCollitionHandler(player, ball) {
+
+      //Get ball x pos relative player x pos 
+      var ballXRelPlayerX = ball.x - player.x;
+      
+      if(ballXRelPlayerX < 0){
+          ballXRelPlayerX = 0;
+      }
+      
+      //Calculate where on players horizontal axis the ball hit
+      var hitXOnPlayer = (ballXRelPlayerX / player.width) * 10;
+
+        if(hitXOnPlayer < 1){
+           ball.body.velocity.x -= 120;
+        }
+
+        if(hitXOnPlayer < 2 && hitXOnPlayer >= 1){
+           ball.body.velocity.x -= 100;
+        }
+        else if(hitXOnPlayer >= 2 && hitXOnPlayer < 4){
+           ball.body.velocity.x -= 50;
+        } 
+        else if(hitXOnPlayer > 6 && hitXOnPlayer <= 8){
+           ball.body.velocity.x += 50;
+        } 
+        else if(hitXOnPlayer > 8){
+           ball.body.velocity.x += 120;
+        } 
     }
 };
