@@ -37,6 +37,7 @@ window.onload = function() {
         createGems();
         score = 0;
         scoreText.text = "score:" + score; 
+        gameRunning = false;
     }
     
     function startGame() {
@@ -83,21 +84,31 @@ window.onload = function() {
     function update() {
         game.physics.arcade.collide(player, ball, playerBallCollitionHandler);
         game.physics.arcade.collide(ball, gems, collisionHandler);
+        
+        var playerSpeed = 400;
 
         if (cursors.left.isDown)
         {
-            player.body.velocity.x = -500;
+            player.body.velocity.x = -playerSpeed;
         }
         else if (cursors.right.isDown)
         {
-            player.body.velocity.x = 500;
+            player.body.velocity.x = playerSpeed;
         }
         else if(spaceKey.isDown && !gameRunning){
             startGame();
         } 
         else
         {
-            player.body.velocity.setTo(0, 0);
+            var breakFactor = 50;
+            
+            if(player.body.velocity.x > 0){
+                player.body.velocity.x -= breakFactor;
+            }
+
+            if(player.body.velocity.x < 0){
+                player.body.velocity.x += breakFactor;
+            }
         }
 
         //Check if player misses the ball
@@ -107,7 +118,7 @@ window.onload = function() {
         
         if(gameBeforeStart){
             ball.x = player.x + player.width /2;
-            ball.y = player.y - ball.height;
+            ball.y = player.y - ball.height - 1;
         }
     }
     
