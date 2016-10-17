@@ -9,6 +9,8 @@ window.onload = function() {
     var gems;
     
     var score = 0;
+    var gameRunning = false;
+    var gameBeforeStart = true;
     var scoreText;
 
     function preload () {
@@ -23,41 +25,29 @@ window.onload = function() {
         game.load.audio('hit', 'blip.wav');
     }
     
-    function restartGame() {
+    function resetGame() {
         player.body.x = game.world.centerX;
         player.body.y = game.world.height - 50;                
         
-        ball.body.x = 400;
-        ball.body.y = 200;
         startInfoText.visible = true;
         ball.body.velocity.setTo(0,0);
+       
+        gameBeforeStart = true; 
+        
         createGems();
         score = 0;
         scoreText.text = "score:" + score; 
-       }
-    
-    function createGems(){
-        
-        gems.removeAll(true);
-        
-        gems.enableBody = true;
-        gems.physicsBodyType = Phaser.Physics.ARCADE;
-
-        for (var i = 0; i < 14; i++)
-        {
-            for(var y = 0; y < 5; y++) {
-                var gem = gems.create(120 + i * 41, 50 + (21 * y), 'gem');
-                gem.tint = 0xF0DC07;  
-                gem.body.immovable = true;
-            }
-        } 
     }
     
     function startGame() {
-        ball.body.x = 400;
-        ball.body.y = 200;
-        ball.body.velocity.setTo(150, -300);
+        //Shoot ball up some angle :)
+        var angle = Math.random();
+        
+        ball.body.velocity.setTo(150 * (angle < 0.5 ? -1 : 1), -400);
         startInfoText.visible = false;
+        
+        gameRunning = true;
+        gameBeforeStart = false;
     }
 
     function create () {
@@ -91,8 +81,6 @@ window.onload = function() {
     }
     
     function update() {
-        
-        
         game.physics.arcade.collide(player, ball, playerBallCollitionHandler);
         game.physics.arcade.collide(ball, gems, collisionHandler);
 
@@ -104,8 +92,7 @@ window.onload = function() {
         {
             player.body.velocity.x = 500;
         }
-        else if(spaceKey.isDown){
-            console.log("True");
+        else if(spaceKey.isDown && !gameRunning){
             startGame();
         } 
         else
@@ -115,7 +102,12 @@ window.onload = function() {
 
         //Check if player misses the ball
         if(ball.body.y > game.world.height - 20){
-           restartGame(); 
+           resetGame(); 
+        }
+        
+        if(gameBeforeStart){
+            ball.x = player.x + player.width /2;
+            ball.y = player.y - ball.height;
         }
     }
     
@@ -153,6 +145,29 @@ window.onload = function() {
         } 
         else if(hitXOnPlayer > 8){
            ball.body.velocity.x += 120;
+        } 
+        
+        //if ball goes straight up push it a little to the left or right to spice things up a little :)
+        if(Math.floor(Math.abs(ball.body.velocity.x)) === 0 ){
+            var toss = Math.random();
+            ball.body.velocity.x += 40 * ((toss < 0.5) ? -1 : 1);
+        }
+    }
+    
+    function createGems(){
+        
+        gems.removeAll(true);
+        
+        gems.enableBody = true;
+        gems.physicsBodyType = Phaser.Physics.ARCADE;
+
+        for (var i = 0; i < 14; i++)
+        {
+            for(var y = 0; y < 5; y++) {
+                var gem = gems.create(120 + i * 41, 50 + (21 * y), 'gem');
+                gem.tint = 0xF0DC07;  
+                gem.body.immovable = true;
+            }
         } 
     }
 };
