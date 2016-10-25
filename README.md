@@ -11,6 +11,7 @@ A Breakout game using Phaser, the javscript based game library
       
 TODOS
 * Add power ups
-* Make ball take a different direction based on where it hits the paddle
-* Extra lives
+* ~~Make ball take a different direction based on where it hits the paddle~~
+* ~~Extra lives~~
 * Levels
+  - Create a level format that stores gems, their color and position
