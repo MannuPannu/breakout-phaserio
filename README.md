@@ -11,6 +11,10 @@ A Breakout game using Phaser, the javscript based game library
       
 TODOS
 * Add power ups
+  - Make ball red which makes it cut through gems like butter (P)
+  - Let player be able to shoot bullets (B)
+  - Split ball into 5 balls
+  - Enlarge the player paddle
 * ~~Make ball take a different direction based on where it hits the paddle~~
 * ~~Extra lives~~
 * Levels
