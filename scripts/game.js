@@ -170,7 +170,7 @@ window.onload = function() {
     function collisionHandler(ball, gem) {
         emitter.x = gem.x + (gem.width / 2);
         emitter.y = gem.y + (gem.height / 2);
-        emitter.forEach(function(particle) {  particle.tint = 0xF0DC07;});
+        emitter.forEach(function(particle) {  particle.tint = gem.tint;});
         emitter.start(true, 1500, null, 20);
 
         gem.destroy();
@@ -226,7 +226,24 @@ window.onload = function() {
         {
             for(var y = 0; y < 5; y++) {
                 var gem = gems.create(120 + i * 41, 50 + (21 * y), 'gem');
-                gem.tint = 0xF0DC07;  
+                
+                var rand = Math.random();
+                
+                if(rand < 0.2){
+                    gem.tint = 0xF0DC07;  
+                }else if(rand < 0.4) {
+                    gem.tint = 0x71BFD9;
+                }
+                else if (rand < 0.6){
+                    gem.tint = 0xB743DE;
+                }
+                else if(rand < 0.8){
+                    gem.tint = 0xF2300A;
+                }
+                else {
+                    gem.tint = 0xE8E8E8;
+                }
+                
                 gem.body.immovable = true;
             }
         } 
