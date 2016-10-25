@@ -9,9 +9,12 @@ window.onload = function() {
     var gems;
     
     var score = 0;
+    var lives = 3;
     var gameRunning = false;
     var gameBeforeStart = true;
     var scoreText;
+    var livesText;
+    var gameOverText;
 
     var particleEmitter;
 
@@ -30,27 +33,35 @@ window.onload = function() {
     }
     
     function resetGame() {
-        player.body.x = game.world.centerX;
-        player.body.y = game.world.height - 50;                
-        
-        startInfoText.visible = true;
-        ball.body.velocity.setTo(0,0);
-       
-        gameBeforeStart = true; 
-        
-        createGems();
-        score = 0;
         scoreText.text = "score:" + score; 
-        gameRunning = false;
+        livesText.text = "lives:" + lives;
+        gameRunning = false; 
+        ball.body.velocity.setTo(0,0);
+        gameBeforeStart = true; 
+
+        if(lives === 0){ //Shows game over screen
+            score = 0;
+            lives = 3;
+            gameOverText.visible = true;
+        } //Reset game to start pos
+        else {
+            player.body.x = game.world.centerX;
+            player.body.y = game.world.height - 50;                
+            startInfoText.visible = true;
+        }
     }
     
     function startGame() {
+        if(gameOverText.visible){
+            createGems();
+        }
         //Shoot ball up some angle :)
         var angle = Math.random();
         
         ball.body.velocity.setTo(150 * (angle < 0.5 ? -1 : 1), -400);
         startInfoText.visible = false;
-        
+        gameOverText.visible = false;
+
         gameRunning = true;
         gameBeforeStart = false;
     }
@@ -68,7 +79,10 @@ window.onload = function() {
         spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         
         scoreText = game.add.bitmapText(10, 10, 'carrier_command','score:' + score,24);
+        livesText = game.add.bitmapText(575, 10, 'carrier_command','lives:' + lives,24);
         startInfoText = game.add.bitmapText(100, 250, 'carrier_command','Press space to start',24); 
+        gameOverText = game.add.bitmapText(100, 250, 'carrier_command','Game Over. \n\nPress space to start',24);  
+        gameOverText.visible = false;
 
         player = game.add.sprite(game.world.centerX, game.world.height - 50, 'player');
         gems = game.add.group();
@@ -121,6 +135,7 @@ window.onload = function() {
 
         //Check if player misses the ball
         if(ball.body.y > game.world.height - 20){
+            lives -= 1;
            resetGame(); 
         }
         
