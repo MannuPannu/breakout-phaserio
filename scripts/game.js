@@ -1,7 +1,7 @@
 window.onload = function() {
     
     var game = new Phaser.Game(800, 600, Phaser.AUTO, '', 
-                    { preload: preload, create: create, render: render, update: update });
+                    { preload: preload, create: create, render: render, update: update }, false, false);
    
     var cursors, spaceKey;
     var player, ball;
@@ -13,11 +13,15 @@ window.onload = function() {
     var gameBeforeStart = true;
     var scoreText;
 
+    var particleEmitter;
+
     function preload () {
         game.load.image('ball', 'ball.png');
         game.load.image('player', 'player.png');
         
-        game.load.image('gem', 'gem2.png');
+        game.load.image('gem', 'gem2.png'); 
+        
+        game.load.image('particle', 'particle.png');
         
         game.load.bitmapFont('carrier_command', 'carrier_command.png', 
             'carrier_command.xml');
@@ -55,6 +59,10 @@ window.onload = function() {
         
         fx = game.add.audio('hit');
         game.physics.startSystem(Phaser.Physics.ARCADE);
+
+        emitter = game.add.emitter(0, 0, 100);
+        emitter.makeParticles('particle');
+        emitter.gravity = 130;
         
         cursors = game.input.keyboard.createCursorKeys();
         spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -120,11 +128,22 @@ window.onload = function() {
             ball.x = player.x + player.width /2;
             ball.y = player.y - ball.height - 1;
         }
+
+        //Fade effect for particles explosion
+        emitter.forEachAlive(function(p)
+            {
+                p.alpha= p.lifespan / emitter.lifespan;	
+            });
     }
     
     function collisionHandler(ball, gem) {
+        emitter.x = gem.x + (gem.width / 2);
+        emitter.y = gem.y + (gem.height / 2);
+        emitter.forEach(function(particle) {  particle.tint = 0xF0DC07;});
+        emitter.start(true, 1500, null, 15);
+
         gem.destroy();
-        score += 1;
+        score += 75;
         scoreText.text = "Score:" + score;
         fx.play();
     }
