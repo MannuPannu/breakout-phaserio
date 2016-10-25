@@ -15,6 +15,14 @@ window.onload = function() {
     var scoreText;
     var livesText;
     var gameOverText;
+    
+    //Sounds
+    var hitSound;
+    var bounceSound;
+    
+    //object variables
+    var ballXVel;
+    var ballYVel
 
     var particleEmitter;
 
@@ -29,7 +37,8 @@ window.onload = function() {
         game.load.bitmapFont('carrier_command', 'carrier_command.png', 
             'carrier_command.xml');
             
-        game.load.audio('hit', 'blip.wav');
+        game.load.audio('bounce', 'bounce.wav');
+        game.load.audio('hit', 'hit2.wav');
     }
     
     function resetGame() {
@@ -65,15 +74,17 @@ window.onload = function() {
         gameRunning = true;
         gameBeforeStart = false;
     }
-
+    
     function create () {
         
-        fx = game.add.audio('hit');
+        hitSound = game.add.audio('hit');
+        bounceSound = game.add.audio('bounce');
+        
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
         emitter = game.add.emitter(0, 0, 100);
         emitter.makeParticles('particle');
-        emitter.gravity = 130;
+        emitter.gravity = 150;
         
         cursors = game.input.keyboard.createCursorKeys();
         spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -149,22 +160,27 @@ window.onload = function() {
             {
                 p.alpha= p.lifespan / emitter.lifespan;	
             });
+            
+        //Play sound when ball hits walls
+        if(ball.x <= 1 || (ball.x + ball.width >= game.world.width-1) || ball.y <= 1){
+            bounceSound.play();
+        }
     }
     
     function collisionHandler(ball, gem) {
         emitter.x = gem.x + (gem.width / 2);
         emitter.y = gem.y + (gem.height / 2);
         emitter.forEach(function(particle) {  particle.tint = 0xF0DC07;});
-        emitter.start(true, 1500, null, 15);
+        emitter.start(true, 1500, null, 20);
 
         gem.destroy();
         score += 75;
         scoreText.text = "Score:" + score;
-        fx.play();
+        hitSound.play();
     }
     
     function playerBallCollitionHandler(player, ball) {
-
+        bounceSound.play();
       //Get ball x pos relative player x pos 
       var ballXRelPlayerX = ball.x - player.x;
       
