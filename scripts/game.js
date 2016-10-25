@@ -8,6 +8,9 @@ window.onload = function() {
     
     var gems;
     
+    var powerUps;
+    var powerUpActive = false;
+    
     var score = 0;
     var lives = 3;
     var gameRunning = false;
@@ -19,6 +22,7 @@ window.onload = function() {
     //Sounds
     var hitSound;
     var bounceSound;
+    var powerUpSound;
     
     //object variables
     var ballXVel;
@@ -30,6 +34,8 @@ window.onload = function() {
         game.load.image('ball', 'ball.png');
         game.load.image('player', 'player.png');
         
+        game.load.image('powerupP', 'powerupP.png');
+        
         game.load.image('gem', 'gem2.png'); 
         
         game.load.image('particle', 'particle.png');
@@ -39,6 +45,7 @@ window.onload = function() {
             
         game.load.audio('bounce', 'bounce.wav');
         game.load.audio('hit', 'hit2.wav');
+        game.load.audio('powerup', 'powerup.wav');
     }
     
     function resetGame() {
@@ -79,6 +86,7 @@ window.onload = function() {
         
         hitSound = game.add.audio('hit');
         bounceSound = game.add.audio('bounce');
+        powerUpSound = game.add.audio('powerup');
         
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -97,10 +105,14 @@ window.onload = function() {
 
         player = game.add.sprite(game.world.centerX, game.world.height - 50, 'player');
         gems = game.add.group();
+        powerUps = game.add.group();
+        powerUps.enableBody = true;
+        powerUps.physicsBodyType = Phaser.Physics.ARCADE;
+
         createGems();
         
         ball = game.add.sprite(400, 200, 'ball');
-        game.physics.enable([player, ball, gems], Phaser.Physics.ARCADE);
+        game.physics.enable([player, ball, gems, powerUps], Phaser.Physics.ARCADE);
 
         ball.body.collideWorldBounds = true;
         ball.body.bounce.setTo(1, 1);
@@ -115,8 +127,15 @@ window.onload = function() {
     }
     
     function update() {
+        
+        if(powerUpActive){
+            game.physics.arcade.overlap(ball, gems, collisionHandler);
+        }else {
+            game.physics.arcade.collide(ball, gems, collisionHandler);
+        }
+        
         game.physics.arcade.collide(player, ball, playerBallCollitionHandler);
-        game.physics.arcade.collide(ball, gems, collisionHandler);
+        game.physics.arcade.collide(player, powerUps, playerPowerUpCollision)
         
         var playerSpeed = 400;
 
@@ -177,6 +196,16 @@ window.onload = function() {
         score += 75;
         scoreText.text = "Score:" + score;
         hitSound.play();
+        
+        
+        var r = Math.random();
+       
+        if(r < 0.5){ 
+            if(powerUps.length < 6){
+                var powerUp = powerUps.create(gem.x + 5, gem.y, 'powerupP');
+                powerUp.body.velocity.y = 75;
+            }
+        }
     }
     
     function playerBallCollitionHandler(player, ball) {
@@ -213,6 +242,20 @@ window.onload = function() {
             var toss = Math.random();
             ball.body.velocity.x += 40 * ((toss < 0.5) ? -1 : 1);
         }
+    }
+    
+    function playerPowerUpCollision(player, powerUp){
+       powerUp.destroy();
+       powerUpSound.play();
+       score += 266;
+       powerUpActive = true;
+
+       ball.tint = 0xff0000;
+       
+       setTimeout(function(){
+         ball.tint = 0xFFFFFF; 
+         powerUpActive = false;
+       }, 5000);
     }
     
     function createGems(){
