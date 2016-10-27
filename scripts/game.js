@@ -67,6 +67,8 @@ window.onload = function() {
         }
         scoreText.text = "score:" + score; 
         livesText.text = "lives:" + lives;
+        
+        powerUpActive = false;
     }
     
     function startGame() {
@@ -128,6 +130,7 @@ window.onload = function() {
         if(powerUpActive){
             game.physics.arcade.overlap(ball, gems, collisionHandler);
         }else {
+            ball.tint = 0xFFFFFF; 
             game.physics.arcade.collide(ball, gems, collisionHandler);
         }
         
@@ -207,10 +210,11 @@ window.onload = function() {
         
         var r = Math.random();
        
-        if(r < 0.2){ 
-            if(powerUps.length < 6){
+        if(r < 0.2 && !powerUpActive){ 
+            if(powerUps.length < 4){
                 var powerUp = powerUps.create(gem.x + 5, gem.y, 'powerupP');
-                powerUp.body.velocity.y = 75;
+                
+                powerUp.body.velocity.y = 100;
             }
         }
     }
@@ -261,7 +265,7 @@ window.onload = function() {
        ball.tint = 0xff0000;
        
        setTimeout(function(){
-         ball.tint = 0xFFFFFF; 
+
          powerUpActive = false;
        }, 5000);
     }
