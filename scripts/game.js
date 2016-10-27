@@ -27,8 +27,9 @@ window.onload = function() {
     //object variables
     var ballXVel;
     var ballYVel
-
-    var particleEmitter;
+    
+    //Particle emitters
+    var emitters = [];
 
     function preload () {
         game.load.image('ball', 'ball.png');
@@ -49,8 +50,7 @@ window.onload = function() {
     }
     
     function resetGame() {
-        scoreText.text = "score:" + score; 
-        livesText.text = "lives:" + lives;
+        powerUps.removeAll();
         gameRunning = false; 
         ball.body.velocity.setTo(0,0);
         gameBeforeStart = true; 
@@ -65,6 +65,8 @@ window.onload = function() {
             player.body.y = game.world.height - 50;                
             startInfoText.visible = true;
         }
+        scoreText.text = "score:" + score; 
+        livesText.text = "lives:" + lives;
     }
     
     function startGame() {
@@ -89,10 +91,6 @@ window.onload = function() {
         powerUpSound = game.add.audio('powerup');
         
         game.physics.startSystem(Phaser.Physics.ARCADE);
-
-        emitter = game.add.emitter(0, 0, 100);
-        emitter.makeParticles('particle');
-        emitter.gravity = 150;
         
         cursors = game.input.keyboard.createCursorKeys();
         spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -127,7 +125,6 @@ window.onload = function() {
     }
     
     function update() {
-        
         if(powerUpActive){
             game.physics.arcade.overlap(ball, gems, collisionHandler);
         }else {
@@ -175,10 +172,12 @@ window.onload = function() {
         }
 
         //Fade effect for particles explosion
-        emitter.forEachAlive(function(p)
-            {
-                p.alpha= p.lifespan / emitter.lifespan;	
-            });
+        emitters.forEach(function(e) {
+            e.forEach(function(p)
+                {
+                    p.alpha= p.lifespan / e.lifespan;	
+                });
+        });
             
         //Play sound when ball hits walls
         if(ball.x <= 1 || (ball.x + ball.width >= game.world.width-1) || ball.y <= 1){
@@ -187,20 +186,28 @@ window.onload = function() {
     }
     
     function collisionHandler(ball, gem) {
+        var emitter = game.add.emitter(0, 0, 150);
+        emitter.gravity = 150;
+        emitter.makeParticles('particle');
         emitter.x = gem.x + (gem.width / 2);
         emitter.y = gem.y + (gem.height / 2);
-        emitter.forEach(function(particle) {  particle.tint = gem.tint;});
-        emitter.start(true, 1500, null, 20);
+        emitter.forEach(p => p.tint = gem.tint);
+        emitter.start(true, 1500, null, 10);
+        emitters.push(emitter);
+        
+        setTimeout(function() { 
+            emitters = emitters.filter(e => e.name !== emitter.name);
+            emitter.destroy(); 
+        }, 1500);
 
         gem.destroy();
         score += 75;
         scoreText.text = "Score:" + score;
         hitSound.play();
         
-        
         var r = Math.random();
        
-        if(r < 0.5){ 
+        if(r < 0.2){ 
             if(powerUps.length < 6){
                 var powerUp = powerUps.create(gem.x + 5, gem.y, 'powerupP');
                 powerUp.body.velocity.y = 75;
@@ -245,6 +252,7 @@ window.onload = function() {
     }
     
     function playerPowerUpCollision(player, powerUp){
+        powerUps.removeAll();
        powerUp.destroy();
        powerUpSound.play();
        score += 266;
