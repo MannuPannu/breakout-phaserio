@@ -6,6 +6,10 @@ window.onload = function() {
     var cursors, spaceKey;
     var player, ball;
     
+    //Player cannons
+    var cannon1, cannon2;
+    var cannonsActive = false;
+    
     var gems;
     
     var powerUps;
@@ -36,6 +40,8 @@ window.onload = function() {
         game.load.image('player', 'player.png');
         
         game.load.image('powerupP', 'powerupP.png');
+        game.load.image('powerupL', 'powerupL.png');
+        game.load.image('cannon', 'cannon.png');
         
         game.load.image('gem', 'gem2.png'); 
         
@@ -69,6 +75,7 @@ window.onload = function() {
         livesText.text = "lives:" + lives;
         
         powerUpActive = false;
+        cannonsActive = false;
     }
     
     function startGame() {
@@ -102,8 +109,14 @@ window.onload = function() {
         startInfoText = game.add.bitmapText(100, 250, 'carrier_command','Press space to start',24); 
         gameOverText = game.add.bitmapText(100, 250, 'carrier_command','Game Over. \n\nPress space to start',24);  
         gameOverText.visible = false;
-
+        
+        cannon1 = new Phaser.Sprite(game, 20, -22, 'cannon');
+        cannon2 = new Phaser.Sprite(game, 50, -22, 'cannon');
+        
         player = game.add.sprite(game.world.centerX, game.world.height - 50, 'player');
+        player.addChild(cannon1);
+        player.addChild(cannon2);
+        
         gems = game.add.group();
         powerUps = game.add.group();
         powerUps.enableBody = true;
@@ -112,7 +125,7 @@ window.onload = function() {
         createGems();
         
         ball = game.add.sprite(400, 200, 'ball');
-        game.physics.enable([player, ball, gems, powerUps], Phaser.Physics.ARCADE);
+        game.physics.enable([player, ball, gems, powerUps, cannon1, cannon2], Phaser.Physics.ARCADE);
 
         ball.body.collideWorldBounds = true;
         ball.body.bounce.setTo(1, 1);
@@ -127,6 +140,7 @@ window.onload = function() {
     }
     
     function update() {
+
         if(powerUpActive){
             game.physics.arcade.overlap(ball, gems, collisionHandler);
         }else {
@@ -139,11 +153,11 @@ window.onload = function() {
         
         var playerSpeed = 400;
 
-        if (cursors.left.isDown)
+        if (cursors.left.isDown || game.input.keyboard.isDown(Phaser.Keyboard.A))
         {
             player.body.velocity.x = -playerSpeed;
         }
-        else if (cursors.right.isDown)
+        else if (cursors.right.isDown || game.input.keyboard.isDown(Phaser.Keyboard.D))
         {
             player.body.velocity.x = playerSpeed;
         }
@@ -194,7 +208,9 @@ window.onload = function() {
                 p.destroy();
             }
         });
-    }
+
+        cannon1.visible = cannon2.visible = cannonsActive;
+     }
     
     function collisionHandler(ball, gem) {
         var emitter = game.add.emitter(0, 0, 150);
@@ -218,9 +234,19 @@ window.onload = function() {
         
         var r = Math.random();
        
-        if(r < 0.2 && !powerUpActive){ 
+        if(r < 1 && !powerUpActive && !cannonsActive){ 
             if(powerUps.length < 4){
-                var powerUp = powerUps.create(gem.x + 5, gem.y, 'powerupP');
+                
+                var randPowerup = Math.random();
+                var powerUpStr = randPowerup < 0.5 ? 'powerupP' : 'powerupL';
+                
+                var powerUp = powerUps.create(gem.x + 5, gem.y, powerUpStr);
+
+                powerUp.anchor.x += 0.5;
+                powerUp.anchor.y += 0.5;
+                powerUp.angle = -30;
+                game.add.tween(powerUp).to( { angle: 60 }, 1000, Phaser.Easing.Linear.None, 
+                                            true, 0, -1, true)
                 
                 powerUp.body.velocity.y = 100;
             }
@@ -264,17 +290,25 @@ window.onload = function() {
     }
     
     function playerPowerUpCollision(player, powerUp){
-        powerUps.removeAll();
+       powerUps.removeAll();
        powerUp.destroy();
        powerUpSound.play();
        score += 266;
-       powerUpActive = true;
+
+       if(powerUp.key === 'powerupL'){
+            cannonsActive = true;           
+            game.add.tween(cannon1).from( { y: -10 }, 500, Phaser.Easing.Linear.None, true);
+            game.add.tween(cannon2).from( { y: -10 }, 500, Phaser.Easing.Linear.None, true);
+       }
+       else if(powerUp.key === 'powerupP'){
+            powerUpActive = true;
+       }
 
        ball.tint = 0xff0000;
        
        setTimeout(function(){
-
          powerUpActive = false;
+         cannonsActive = false;
        }, 5000);
     }
     
