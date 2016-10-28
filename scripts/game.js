@@ -234,7 +234,7 @@ window.onload = function() {
         
         var r = Math.random();
        
-        if(r < 1 && !powerUpActive && !cannonsActive){ 
+        if(r < 0.2 && !powerUpActive && !cannonsActive){ 
             if(powerUps.length < 4){
                 
                 var randPowerup = Math.random();
