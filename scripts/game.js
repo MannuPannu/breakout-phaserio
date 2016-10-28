@@ -1,6 +1,6 @@
 window.onload = function() {
     
-    var game = new Phaser.Game(800, 600, Phaser.AUTO, '', 
+    var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameArea', 
                     { preload: preload, create: create, render: render, update: update }, false, false);
    
     var cursors, spaceKey;
@@ -186,6 +186,14 @@ window.onload = function() {
         if(ball.x <= 1 || (ball.x + ball.width >= game.world.width-1) || ball.y <= 1){
             bounceSound.play();
         }
+
+        //Check if powerups are out of bounds, then destroy them
+        powerUps.forEach(p => {
+            if(p.y > (game.world.height))
+            {
+                p.destroy();
+            }
+        });
     }
     
     function collisionHandler(ball, gem) {

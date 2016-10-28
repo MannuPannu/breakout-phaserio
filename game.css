@@ -1,0 +1,28 @@
+#gameArea {
+    margin: 0 auto;
+    width: 800px;
+}
+
+canvas {
+    border: 1px white solid;
+}
+
+body {
+    background-color: black;
+}
+
+@font-face {
+  font-family: 'coolfont';
+  src: url('coolfont.TTF');
+}
+
+body {
+    color: white;
+    font-family: coolfont;
+}
+
+.gameTitle {
+    font-size: 50px;
+    color: #9e50ff;
+    margin: 8px;
+}

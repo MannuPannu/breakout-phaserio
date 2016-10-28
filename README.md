@@ -10,12 +10,14 @@ A Breakout game using Phaser, the javscript based game library
   - Now go to localhost:8000 in any browser and play the game :)
       
 TODOS
+* Levels
+  - Create a level format that stores gems, their color and position  
+  - Add levelcounter (createGems should load gems according to current level)
+
 * Add power ups
-  - Make ball red which makes it cut through gems like butter (P)
   - Let player be able to shoot bullets (B)
   - Split ball into 5 balls
   - Enlarge the player paddle
 * ~~Make ball take a different direction based on where it hits the paddle~~
 * ~~Extra lives~~
-* Levels
-  - Create a level format that stores gems, their color and position
+
