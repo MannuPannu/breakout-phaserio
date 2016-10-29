@@ -7,8 +7,13 @@ window.onload = function() {
     var player, ball;
     
     //Player cannons
-    var cannon1, cannon2;
+    var cannon1;
     var cannonsActive = false;
+
+    var bullets;
+    var bullet;
+    var fireRate = 300;
+    var nextFire = 0;
     
     var gems;
     
@@ -36,6 +41,7 @@ window.onload = function() {
     var emitters = [];
 
     function preload () {
+        game.load.image('bullet', 'laser.png');
         game.load.image('ball', 'ball.png');
         game.load.image('player', 'player.png');
         
@@ -110,12 +116,10 @@ window.onload = function() {
         gameOverText = game.add.bitmapText(100, 250, 'carrier_command','Game Over. \n\nPress space to start',24);  
         gameOverText.visible = false;
         
-        cannon1 = new Phaser.Sprite(game, 20, -22, 'cannon');
-        cannon2 = new Phaser.Sprite(game, 50, -22, 'cannon');
+        cannon1 = new Phaser.Sprite(game, 33, -22, 'cannon');
         
         player = game.add.sprite(game.world.centerX, game.world.height - 50, 'player');
         player.addChild(cannon1);
-        player.addChild(cannon2);
         
         gems = game.add.group();
         powerUps = game.add.group();
@@ -123,9 +127,16 @@ window.onload = function() {
         powerUps.physicsBodyType = Phaser.Physics.ARCADE;
 
         createGems();
+
+        bullets = game.add.group();
+        bullets.enableBody = true;
+        bullets.physicsBodyType = Phaser.Physics.ARCADE;
+        bullets.createMultiple(50, 'bullet');
+        bullets.setAll('checkWorldBounds', true);
+        bullets.setAll('outOfBoundsKill', true);
         
         ball = game.add.sprite(400, 200, 'ball');
-        game.physics.enable([player, ball, gems, powerUps, cannon1, cannon2], Phaser.Physics.ARCADE);
+        game.physics.enable([player, ball, gems, powerUps, cannon1, bullets], Phaser.Physics.ARCADE);
 
         ball.body.collideWorldBounds = true;
         ball.body.bounce.setTo(1, 1);
@@ -150,6 +161,7 @@ window.onload = function() {
         
         game.physics.arcade.collide(player, ball, playerBallCollitionHandler);
         game.physics.arcade.collide(player, powerUps, playerPowerUpCollision)
+        game.physics.arcade.collide(bullets, gems, bulletGemCollision);
         
         var playerSpeed = 400;
 
@@ -163,7 +175,7 @@ window.onload = function() {
         }
         else if(spaceKey.isDown && !gameRunning){
             startGame();
-        } 
+        }
         else
         {
             var breakFactor = 50;
@@ -175,6 +187,10 @@ window.onload = function() {
             if(player.body.velocity.x < 0){
                 player.body.velocity.x += breakFactor;
             }
+        }
+
+        if(spaceKey.isDown && cannonsActive) {
+            fire();
         }
 
         //Check if player misses the ball
@@ -209,11 +225,23 @@ window.onload = function() {
             }
         });
 
-        cannon1.visible = cannon2.visible = cannonsActive;
+        cannon1.visible = cannonsActive;
+     }
+
+
+
+     function bulletGemCollision(bullet, gem) {
+         OnGemCollisionWithObject(bullet, gem);
+
+         bullet.kill();
      }
     
     function collisionHandler(ball, gem) {
-        var emitter = game.add.emitter(0, 0, 150);
+         OnGemCollisionWithObject(ball, gem);
+    }
+
+    function OnGemCollisionWithObject(obj, gem) {
+         var emitter = game.add.emitter(0, 0, 150);
         emitter.gravity = 150;
         emitter.makeParticles('particle');
         emitter.x = gem.x + (gem.width / 2);
@@ -234,11 +262,11 @@ window.onload = function() {
         
         var r = Math.random();
        
-        if(r < 0.2 && !powerUpActive && !cannonsActive){ 
+        if(r <= 0.2 && !powerUpActive && !cannonsActive){ 
             if(powerUps.length < 4){
                 
                 var randPowerup = Math.random();
-                var powerUpStr = randPowerup < 0.5 ? 'powerupP' : 'powerupL';
+                var powerUpStr = randPowerup <= 0.4 ? 'powerupP' : 'powerupL';
                 
                 var powerUp = powerUps.create(gem.x + 5, gem.y, powerUpStr);
 
@@ -295,10 +323,12 @@ window.onload = function() {
        powerUpSound.play();
        score += 266;
 
+       var powerUpTimeOut = 5000;
+
        if(powerUp.key === 'powerupL'){
             cannonsActive = true;           
             game.add.tween(cannon1).from( { y: -10 }, 500, Phaser.Easing.Linear.None, true);
-            game.add.tween(cannon2).from( { y: -10 }, 500, Phaser.Easing.Linear.None, true);
+            powerUpTimeOut = 3000;
        }
        else if(powerUp.key === 'powerupP'){
             powerUpActive = true;
@@ -309,10 +339,10 @@ window.onload = function() {
        setTimeout(function(){
          powerUpActive = false;
          cannonsActive = false;
-       }, 5000);
+       }, 4000);
     }
     
-    function createGems(){
+    function createGems() {
         
         gems.removeAll(true);
         
@@ -344,5 +374,19 @@ window.onload = function() {
                 gem.body.immovable = true;
             }
         } 
+    }
+
+    function fire() {
+
+        if (game.time.now > nextFire && bullets.countDead() > 0)
+        {
+            nextFire = game.time.now + fireRate;
+
+            var bullet = bullets.getFirstDead();
+
+            bullet.reset(player.x + 33, player.y-50);
+
+            bullet.body.velocity.y -= 500;
+        }
     }
 };
